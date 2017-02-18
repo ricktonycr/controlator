@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+	<title>Presentación</title>
+  <style type="text/css">
+
+div, html, body{
+  margin: 0px;
+  padding: 0px;
+  border: none;
+}
+
+html, body{
+  width: 100%;
+  height: 100%;
+}
+
+
+#content-all{
+  width: 100%;
+  height: calc(100% - 30px);
+  background-color: #333;
+  color: #fff;
+  display: inline-block;
+  text-align: center;
+}
+
+canvas{
+  background-color: #ffffff;
+}
+
+  </style>
+</head>
+<body>
+  <div id="content-all">
+
+    <canvas id="myCanvas" width="700px" height="500px" >
+      Your browser don't support canvas tag
+    </canvas>
+
+  </div>
+  <div id="buttons">
+    <button id="connect">Conectar</button>
+    <button id="expand">Expandir</button>
+  </div>
+  <script src="js/webrtcConnection.js"></script>
+  <script src="../../js/jquery-1.11.3.js"></script>
+  <script type="text/javascript">
+    (function(){
+
+      var cont = 0;
+      var content = document.getElementById("content-all");
+      
+      var canvas = document.getElementById('myCanvas');
+      var context = canvas.getContext('2d');
+      var centerX = canvas.width / 2;
+      var centerY = 0;
+      var radius = 5;
+
+      context.beginPath();
+      context.arc(centerX, 0, radius, 0, 2 * Math.PI, false);
+      context.fillStyle = '#64B5F6';
+      context.fill();
+
+      vx = 0;
+      vy = 0;
+      g = 0.2;
+      function moving(){
+
+        
+        if(centerY >= canvas.height - radius && vy > 0){
+          centerY = canvas.height - radius; 
+        }else{
+          vy += g;
+          centerY += vy;
+        }
+
+        if(centerX <= canvas.width && centerX >= 0){
+          centerX += vx;
+        }else{
+          if(centerX >= canvas.width)
+            centerX = canvas.width;
+          if(centerX < 0)
+            centerX = 0;
+        }
+
+        context.beginPath();
+        context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+        context.fillStyle = '#64B5F6';
+        context.fill();
+
+        requestAnimationFrame(moving);
+        console.log(centerY + " " + vy);
+      }
+
+      requestAnimationFrame(moving);
+
+
+      function message(mess){
+        if(mess == "r"){
+          vy = -3;
+        }else if(mess == "l"){
+          context.clearRect(0,0,canvas.width,canvas.height);
+        }else{
+          if(Math.abs(mess)<0.2){
+            vx = 0;
+          }else{
+            vx = Math.pow(mess,2)*(mess/Math.abs(mess));
+          }
+        }
+        console.log(mess);
+      }
+
+
+      RTC.init("server","control","ws://10.42.0.1:1232",'websocket',message);
+      
+      var connectButton = document.getElementById("connect");
+      var expandButton = document.getElementById("expand");
+      connectButton.addEventListener("click",function(){
+        RTC.openConnection();
+      });
+      expandButton.addEventListener("click",function(){
+        img.webkitRequestFullScreen();
+      });
+
+    })();
+  </script>
+</body>
+</html>
