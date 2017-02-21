@@ -13,11 +13,22 @@ RTC = (function(){
 		funcMessage(e.data);
 	}
 
+	function createRTC(config){
+		if('RTCPeerConection' in window){
+			return new RTCPeerConection(config);
+		}else if('webkitRTCPeerConnection' in window){
+			return new webkitRTCPeerConnection(config);
+		}else if('mozRTCPeerConnection' in window){
+			return new mozRTCPeerConnection(config);
+		}
+	}
+
+
 	function openDataChannel (){
 		var config = {"iceServers":[{"url":"stun:stun.l.google.com:19302"}]};
 		//var connection = { 'optional': [{'DtlsSrtpKeyAgreement': true}, {'RtpDataChannels': true }] };
 
-		peerConnection = new webkitRTCPeerConnection(config);
+		peerConnection = createRTC(config);
 		peerConnection.onicecandidate = function(e){
 			if (!peerConnection || !e || !e.candidate) return;
 			var candidate = e.candidate;

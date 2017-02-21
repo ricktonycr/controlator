@@ -56,7 +56,7 @@ canvas{
       var context = canvas.getContext('2d');
       var centerX = canvas.width / 2;
       var centerY = 0;
-      var radius = 5;
+      var radius = 15;
 
       context.beginPath();
       context.arc(centerX, 0, radius, 0, 2 * Math.PI, false);
@@ -65,15 +65,37 @@ canvas{
 
       vx = 0;
       vy = 0;
-      g = 0.2;
+      g = 0.0;
+      obstacleSpeed = 1;
+
+      var obs = [{tall:300,y:0},{tall:500,y:250}];
+
+      function drawObstacles(obs){
+        obstacleSpeed += 0.0005;
+        obs.y += obstacleSpeed;
+        if(obs.y > canvas.height){
+          obs.y = 0;
+          obs.tall = Math.random()*(canvas.width-100)+50;
+        }
+        context.rect(0,obs.y,obs.tall-50,40);
+        context.fillStyle = 'black';
+        context.fill();
+        context.rect(obs.tall+50,obs.y,canvas.width-obs.tall+50,40);
+        context.fill();
+      }
+
       function moving(){
 
-        
+        context.clearRect(0,0,canvas.width,canvas.height);
+        for(var i=0;i<obs.length;i++)
+          drawObstacles(obs[i]);
+
         if(centerY >= canvas.height - radius && vy > 0){
           centerY = canvas.height - radius; 
         }else{
-          vy += g;
           centerY += vy;
+          if(centerY < 0)
+            centerY = 0;
         }
 
         if(centerX <= canvas.width && centerX >= 0){
@@ -91,29 +113,43 @@ canvas{
         context.fill();
 
         requestAnimationFrame(moving);
-        console.log(centerY + " " + vy);
       }
 
       requestAnimationFrame(moving);
 
 
       function message(mess){
-        if(mess == "r"){
-          vy = -3;
-        }else if(mess == "l"){
-          context.clearRect(0,0,canvas.width,canvas.height);
-        }else{
-          if(Math.abs(mess)<0.2){
-            vx = 0;
-          }else{
-            vx = Math.pow(mess,2)*(mess/Math.abs(mess));
-          }
+
+        var input = JSON.parse(mess);
+
+        switch(input.id){
+          case 1:
+
+            if(Math.abs(input.value)<0.2){
+              vx = 0;
+            }else{
+              vx = Math.pow(input.value,2)*(input.value/Math.abs(input.value));
+            }
+
+          break;
+          case 2:
+
+            if(Math.abs(input.value)<0.2){
+              vy = 0;
+            }else{
+              vy = input.value;
+            }
+
+          break;
+          case 3:
+            context.clearRect(0,0,canvas.width,canvas.height);
+          break;
+          case 4:
+          break;
         }
-        console.log(mess);
       }
 
-
-      RTC.init("server","control","ws://10.42.0.1:1232",'websocket',message);
+      RTC.init("server","control","ws://192.168.0.199:1232",'websocket',message);
       
       var connectButton = document.getElementById("connect");
       var expandButton = document.getElementById("expand");
