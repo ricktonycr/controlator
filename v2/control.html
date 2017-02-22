@@ -46,7 +46,7 @@
   (function(){
 
    var cont = 0;
-   var output = {id:0,value:0};
+   var output = {id:0,value:0,x:0,y:0};
    var t=0;
    function message(mess){
    }
@@ -66,17 +66,27 @@
   });
 
    RTC.init("control","server","ws://10.42.0.1:1232",'websocket',message);
-   console.log("sdfsdfsd");
 
 
    var Y = 0;
    var X = 0;
+   var time = (new Date()).getTime();
    window.ondevicemotion = function(event) {
     var accelerationX = event.accelerationIncludingGravity.x;
     var accelerationY = event.accelerationIncludingGravity.y;
-    var accelerationZ = event.accelerationIncludingGravity.z;
+    // var accelerationZ = event.accelerationIncludingGravity.z;
 
-    if(Math.abs(Y - accelerationY) > 0.2){
+    var t = (new Date()).getTime();
+    if(Math.abs(time - t) > 100){
+      time = (new Date()).getTime();
+      output.id = 1;
+      output.value = 0;
+      output.x = accelerationX;
+      output.y = accelerationY;
+      RTC.sendMessage(JSON.stringify(output));
+    }
+
+    /*if(Math.abs(Y - accelerationY) > 0.2){
       Y = accelerationY;
       output.id = 1;
       output.value = Y;
@@ -88,7 +98,7 @@
       output.id = 2;
       output.value = X;
       RTC.sendMessage(JSON.stringify(output));
-    }
+    }*/
 
   }
 })();

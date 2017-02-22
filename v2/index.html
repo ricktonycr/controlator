@@ -43,6 +43,7 @@ canvas{
   <div id="buttons">
     <button id="connect">Conectar</button>
     <button id="expand">Expandir</button>
+    <button id="start">Iniciar</button>
   </div>
   <script src="js/webrtcConnection.js"></script>
   <script src="../../js/jquery-1.11.3.js"></script>
@@ -50,6 +51,8 @@ canvas{
     (function(){
 
       var cont = 0;
+      var puntaje = 0;
+      var velPuntaje = 0.1;
       var content = document.getElementById("content-all");
       
       var canvas = document.getElementById('myCanvas');
@@ -71,22 +74,39 @@ canvas{
 
       var obs = [{tall:300,y:0},{tall:500,y:250}];
 
-      function drawObstacles(obs){
-        obstacleSpeed += 0.0005;
-        obs.y += obstacleSpeed;
-        if(obs.y > canvas.height){
-          obs.y = 0;
-          obs.tall = Math.random()*(canvas.width-100)+50;
+      function drawObstacles(ob){
+        ob.y += obstacleSpeed;
+        if(ob.y > canvas.height){
+          ob.y = 0;
+          ob.tall = Math.random()*(canvas.width-100)+50;
         }
-        context.rect(0,obs.y,obs.tall-50,40);
+        if((centerY+radius > ob.y && centerY-radius < ob.y+40) && !(centerX-radius > ob.tall-50 && centerX+radius < ob.tall+50)){
+          centerY = canvas.height-radius;
+          centerX = canvas.width / 2;
+          start = false;
+          obs = [{tall:300,y:0},{tall:500,y:250}];
+          if(confirm("Tu puntaje es "+Math.round(puntaje)+", deseas continuar?")){
+            start = true;
+            puntaje = 0;
+          }
+
+        }
+        context.rect(0,ob.y,ob.tall-50,40);
         context.fillStyle = 'black';
+        context.rect(ob.tall+50,ob.y,canvas.width-ob.tall+50,40);
         context.fill();
-        context.rect(obs.tall+50,obs.y,canvas.width-obs.tall+50,40);
-        context.fill();
+
+
+        context.fillStyle = 'red';
+        context.font="40px Georgia";
+        velPuntaje += 0.0004;
+        puntaje += velPuntaje;
+        context.fillText(Math.round(puntaje),600,50);
       }
 
       function moving(){
 
+        obstacleSpeed += 0.0004;
         context.clearRect(0,0,canvas.width,canvas.height);
 
         if(start)
@@ -122,30 +142,29 @@ canvas{
 
 
       function message(mess){
-        start = true;
+
         var input = JSON.parse(mess);
 
         switch(input.id){
           case 1:
 
-            if(Math.abs(input.value)<0.2){
+            if(Math.abs(input.y)<0.2){
               vx = 0;
             }else{
-              vx = Math.pow(input.value,2)*(input.value/Math.abs(input.value));
+              vx = Math.pow(input.y,2)*(input.y/Math.abs(input.y));
+            }
+
+            if(Math.abs(input.x)<0.2){
+              vy = 0;
+            }else{
+              vy = input.x;
             }
 
           break;
           case 2:
 
-            if(Math.abs(input.value)<0.2){
-              vy = 0;
-            }else{
-              vy = input.value;
-            }
-
           break;
           case 3:
-            context.clearRect(0,0,canvas.width,canvas.height);
           break;
           case 4:
           break;
@@ -156,11 +175,15 @@ canvas{
       
       var connectButton = document.getElementById("connect");
       var expandButton = document.getElementById("expand");
+      var startButton = document.getElementById("start");
       connectButton.addEventListener("click",function(){
         RTC.openConnection();
       });
       expandButton.addEventListener("click",function(){
         img.webkitRequestFullScreen();
+      });
+      startButton.addEventListener("click",function(){
+        start = true;
       });
 
     })();
