@@ -55,11 +55,12 @@ canvas{
       var canvas = document.getElementById('myCanvas');
       var context = canvas.getContext('2d');
       var centerX = canvas.width / 2;
-      var centerY = 0;
       var radius = 15;
+      var centerY = canvas.height-radius;
+      var start = false;
 
       context.beginPath();
-      context.arc(centerX, 0, radius, 0, 2 * Math.PI, false);
+      context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
       context.fillStyle = '#64B5F6';
       context.fill();
 
@@ -87,6 +88,8 @@ canvas{
       function moving(){
 
         context.clearRect(0,0,canvas.width,canvas.height);
+
+        if(start)
         for(var i=0;i<obs.length;i++)
           drawObstacles(obs[i]);
 
@@ -119,7 +122,7 @@ canvas{
 
 
       function message(mess){
-
+        start = true;
         var input = JSON.parse(mess);
 
         switch(input.id){
@@ -149,7 +152,7 @@ canvas{
         }
       }
 
-      RTC.init("server","control","ws://192.168.0.199:1232",'websocket',message);
+      RTC.init("server","control","ws://10.42.0.1:1232",'websocket',message);
       
       var connectButton = document.getElementById("connect");
       var expandButton = document.getElementById("expand");
